@@ -149,7 +149,7 @@ function SearchResults({ searchResults, platformFilter }) {
 
   return (
     <div>
-       {isVisible && (
+      {isVisible && (
         <div>
           <IconButton
             style={{ position: "absolute", top: 10, right: 10 }}
@@ -159,19 +159,8 @@ function SearchResults({ searchResults, platformFilter }) {
           >
             <CloseIcon />
           </IconButton>
-          {/* Filtreleme düğmelerini burada ekliyoruz */}
-          <div>
-            <h2>Filtreleme:</h2>
-            <ul style={{ listStyleType: "none", padding: 0 }}>
-              {yearsToFilter.map((year) => (
-                <li key={year}>
-                  <button onClick={() => handleFilterByYear(year)}>{year}</button>
-                </li>
-              ))}
-            </ul>
-          </div>
           <ul style={{ listStyleType: "none", padding: 0 }}>
-            {filteredResults.map((movie) => (
+            {searchResults.map((movie) => (
               <ResultItem
                 key={movie.id}
                 onClick={() => handleMovieClick(movie)}
