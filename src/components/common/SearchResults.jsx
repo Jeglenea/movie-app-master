@@ -55,8 +55,7 @@ const defaultPoster =
   "https://fastly.picsum.photos/id/1035/200/300.jpg?hmac=744aBtkMLjfDyn2TzkMxsFzw2T0L57TMlNGFlX-Qgq0";
 
 function SearchResults({ searchResults, platformFilter }) {
-  const [startYear, setStartYear] = useState(null);
-  const [endYear, setEndYear] = useState(null);
+  const [selectedYear, setSelectedYear] = useState(null);
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [movieDetails, setMovieDetails] = useState(null);
   const [moviePlatform, setMoviePlatfrom] = useState(null);
@@ -65,7 +64,9 @@ function SearchResults({ searchResults, platformFilter }) {
   const [isVisible, setIsVisible] = useState(true); // isVisible state'i eklenmiş
 
 
-
+  const handleFilterByYear = (year) => {
+    setSelectedYear(year);
+  };
   const yearsToFilter = [2023, 2022, 2021, 2020];
   const handleMovieClick = async (movie) => {
     setSelectedMovie(movie);
@@ -123,17 +124,6 @@ function SearchResults({ searchResults, platformFilter }) {
     } catch (error) {
       console.error("Error while fetching movie details", error);
     }
-  };
-  const filterByYearRange = (movie) => {
-    if (startYear === null || endYear === null) {
-      return true;
-    }
-  
-    const releaseYear = movie.release_date
-      ? parseInt(movie.release_date.substring(0, 4))
-      : null;
-  
-    return releaseYear >= startYear && releaseYear <= endYear;
   };
   const filteredResults = selectedYear
   ? searchResults.filter((movie) => {
