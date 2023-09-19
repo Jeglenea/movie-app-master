@@ -1,6 +1,6 @@
 import React from "react";
 
-import { useState, useRef } from "react"; // menu içerisindeki verileri kullanmak için
+import { useState, useRef } from "react";
 import {
   AppBar,
   Toolbar,
@@ -57,8 +57,14 @@ function Header() {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [showResults, setShowResults] = useState(false);
+  const [genreFilter, setGenreFilter] = useState("");
+  const [platformFilter, setPlatformFilter] = useState("");
+  const [yearFilter, setYearFilter] = useState("");
+
   const apiKey = "986fd9a832dc29e418d6705c077923df";
   const navigate = useNavigate();
+  const anchorRef = useRef(null);
 
   const handleToggle = () => {
     setOpen((prev) => !prev);
@@ -79,30 +85,89 @@ function Header() {
         );
 
         setSearchResults(response.data.results);
+        setShowResults(true); // Arama sonuçlarını göster
       } catch (error) {
         console.error("API error:", error);
       }
     }
   };
+  const toggleSearchResults = () => {
+    setShowResults((prev) => !prev);
+  };
+
+  const filteredResults = searchResults.filter((movie) => {
+    // Kullanıcının seçtiği kriterlere göre filtreleme yapın
+    const genreMatch = genreFilter === "" || movie.genres.includes(genreFilter);
+    const platformMatch =
+      platformFilter === "" ||
+      (movie.moviePlatform &&
+        movie.moviePlatform.flatrate &&
+        movie.moviePlatform.flatrate.some(
+          (platform) => platform.provider_name === platformFilter
+        ));
+    const yearMatch = yearFilter === "" || movie.releaseYear === yearFilter;
+
+    // Tüm kriterlere uyan filmleri göster
+    return genreMatch && platformMatch && yearMatch;
+  });
+
+  const sortedResults = filteredResults.sort((a, b) => {
+    // IMDb puanına göre sıralamak için aşağıdaki sıralama işlemi kullanılabilir
+    return b.vote_average - a.vote_average;
+  });
+
   return (
     <AppBar style={{ minHeight: 56 }} position="static">
       <StyledToolBar>
-        <Logo src={logoURL} alt="logo" onClick={() => navigate(routePath.home)} />
-        <Box onClick={handleToggle}>
+        <Logo
+          src={logoURL}
+          alt="logo"
+          onClick={() => navigate(routePath.home)}
+        />
+        <Box ref={anchorRef} onClick={handleToggle}>
           <MenuIcon />
           <Typography>Menu</Typography>
         </Box>
-        
-        {/* Form ekleyin ve onSubmit ile handleSubmit fonksiyonunu çağırın */}
-        <form onSubmit={handleSubmit}>
-          <InputSearchField
-            variant="outlined"
-            placeholder="Film ara..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+        <HeaderMenu
+          handleToggle={handleToggle}
+          open={open}
+          anchorRef={anchorRef}
+        />
+
+        <Box style={{ flex: 1 }}>
+          <select
+            value={genreFilter}
+            onChange={(e) => setGenreFilter(e.target.value)}
+          >
+            <option value="">Tüm Türler</option>
+            <option value="Aksiyon">Aksiyon</option>
+            <option value="Komedi">Komedi</option>
+          </select>
+          <select
+            value={platformFilter}
+            onChange={(e) => setPlatformFilter(e.target.value)}
+          >
+            <option value="">Tüm Platformlar</option>
+            <option value="Netflix">Netflix</option>
+            <option value="Amazon Prime Video">Amazon Prime Video</option>
+          </select>
+          <input
+            type="number"
+            placeholder="Yayın Yılı"
+            value={yearFilter}
+            onChange={(e) => setYearFilter(e.target.value)}
           />
-          <button type="submit">Ara</button>
-        </form>
+          <form onSubmit={handleSubmit}>
+            <InputSearchField
+              variant="outlined"
+              placeholder="Film ara..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <button type="submit">Ara</button>
+          </form>
+        </Box>
+
         <Typography>
           IMDb
           <Typography component="span" style={{ fontSize: 14 }}>
@@ -118,9 +183,15 @@ function Header() {
           <ExpandMore />
         </Box>
       </StyledToolBar>
-      <SearchResults searchResults={searchResults} />
-    </AppBar>
 
+      {/* Arama sonuçlarını göstermek için kontrol ekledik */}
+      {showResults && (
+        <SearchResults
+          searchResults={searchResults}
+          onClose={toggleSearchResults}
+        />
+      )}
+    </AppBar>
   );
 }
 

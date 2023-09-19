@@ -15,6 +15,15 @@ import {
   DialogActions,
 } from "@mui/material";
 
+const ResultItem = styled("li")({
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  padding: "10px",
+  borderRadius: "5px",
+  marginBottom: "20px",
+});
+
 const StyledBanner = styled("img")({
   width: "100%",
   cursor: "pointer",
@@ -31,10 +40,12 @@ const Poster = styled("img")({
   objectFit: "cover", // Poster görüntüsünü düzgün bir şekilde sığdırmak için
 });
 
+
 const MovieDetails = styled("div")({
   flex: 1,
   padding: "20px",
 });
+
 
 const MovieDetailItem = styled("div")({
   marginBottom: "10px",
@@ -46,7 +57,7 @@ const DirectorLink = styled(Typography)`
   &:hover {
     text-decoration: underline;
   }
-`
+`;
 
 const Title = styled(Typography)`
   color: #ffffff;
@@ -54,7 +65,7 @@ const Title = styled(Typography)`
   justify-content: center;
   align-items: center;
   height: 100%;
-`
+`;
 
 const responsive = {
   desktop: {
@@ -71,12 +82,16 @@ const responsive = {
   },
 };
 
+const defaultPoster =
+  "https://fastly.picsum.photos/id/1035/200/300.jpg?hmac=744aBtkMLjfDyn2TzkMxsFzw2T0L57TMlNGFlX-Qgq0";
+
+
 function Slide({ movies }) {
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [movieDetails, setMovieDetails] = useState(null);
+  const [moviePlatform, setMoviePlatfrom] = useState(null);
   const [director, setDirector] = useState("Bilinmiyor");
   const [topActors, setTopActors] = useState([]);
-
   const handleMovieClick = async (movie) => {
     setSelectedMovie(movie);
 
@@ -85,6 +100,8 @@ function Slide({ movies }) {
 
     // Film ekibi (crew) için istek
     const movieCrewUrl = `https://api.themoviedb.org/3/movie/${movie.id}/credits?api_key=986fd9a832dc29e418d6705c077923df&language=en-US`;
+
+    const moviePlatformUrl = `https://api.themoviedb.org/3/movie/${movie.id}/watch/providers?api_key=986fd9a832dc29e418d6705c077923df&language=en-US`;
 
     try {
       // Film detayları için istek
@@ -95,8 +112,14 @@ function Slide({ movies }) {
       const crewResponse = await axios.get(movieCrewUrl);
       const crewData = crewResponse.data;
 
+      // Film ekibi (crew) için istek
+      const platformResponse = await axios.get(moviePlatformUrl);
+      const platfromData = platformResponse.data;
+
       // Yönetmeni bul ve ayarla
-      const directorInfo = crewData.crew.find((crew) => crew.job === "Director");
+      const directorInfo = crewData.crew.find(
+        (crew) => crew.job === "Director"
+      );
       if (directorInfo) {
         setDirector(directorInfo.name);
       }
@@ -107,7 +130,12 @@ function Slide({ movies }) {
 
       // Film türleri ve yayın yılına erişim
       const genres = detailsData.genres.map((genre) => genre.name).join(", ");
-      const releaseYear = detailsData.release_date ? detailsData.release_date.slice(0, 4) : "Bilinmiyor";
+      const releaseYear = detailsData.release_date
+        ? detailsData.release_date.slice(0, 4)
+        : "Bilinmiyor";
+
+      const platforms = platfromData.results.US; // US yerine istediğiniz ülkenin kodunu kullanabilirsiniz
+      setMoviePlatfrom(platforms);
 
       // Film detaylarını ayarla
       const movieDetails = {
@@ -126,6 +154,7 @@ function Slide({ movies }) {
     setDirector("Bilinmiyor");
     setTopActors([]);
   };
+
 
   return (
     <Box style={{ marginTop: 20 }}>
@@ -155,50 +184,66 @@ function Slide({ movies }) {
  
        {/* Filmin Detayları için Dialog */}
        {selectedMovie && movieDetails && (
-         <Dialog
-           open={Boolean(selectedMovie)}
-           onClose={handleClose}
-           maxWidth="md"
-         >
-           <DialogTitle>{selectedMovie.original_title}</DialogTitle>
-           <DialogContent>
-             <DetailsContainer>
-               <Poster
-                 src={`https://image.tmdb.org/t/p/original${selectedMovie.poster_path}`}
-                 alt={selectedMovie.original_title}
-               />
-               <MovieDetails>
-                 <Typography variant="h6">Overview</Typography>
-                 <Typography>{selectedMovie.overview}</Typography>
- 
-                 <MovieDetailItem>
-                   <Typography variant="h6">Genres</Typography>
-                   <Typography>{movieDetails.genres}</Typography>
-                 </MovieDetailItem>
- 
-                 <MovieDetailItem>
-                   <Typography variant="h6">Release Date</Typography>
-                   <Typography>{movieDetails.releaseYear}</Typography>
-                 </MovieDetailItem>
- 
-                 <MovieDetailItem>
-                   <Typography variant="h6">Director</Typography>
-                   <DirectorLink onClick={() => console.log("Yönetmen bilgisi")} >{director}</DirectorLink>
-                 </MovieDetailItem>
- 
-                 <MovieDetailItem>
-                   <Typography variant="h6">Lead Actors</Typography>
-                   <Typography>{topActors.join(", ")}</Typography>
-                 </MovieDetailItem>
-               </MovieDetails>
-             </DetailsContainer>
-           </DialogContent>
-           <DialogActions>
-             <Button onClick={handleClose}>Kapat</Button>
-           </DialogActions>
-         </Dialog>
-       )}
-     </Box>
+        <Dialog
+          open={Boolean(selectedMovie)}
+          onClose={handleClose}
+          maxWidth="md"
+        >
+          <DialogTitle>{selectedMovie.original_title}</DialogTitle>
+          <DialogContent>
+            <DetailsContainer>
+              <Poster
+                src={
+                  selectedMovie.poster_path
+                    ? `https://image.tmdb.org/t/p/original${selectedMovie.poster_path}`
+                    : defaultPoster
+                }
+                alt={selectedMovie.original_title}
+              />
+              <MovieDetails>
+                <Typography variant="h6">Overview</Typography>
+                <Typography>{selectedMovie.overview}</Typography>
+
+                <MovieDetailItem>
+                  <Typography variant="h6">Genres</Typography>
+                  <Typography>{movieDetails.genres}</Typography>
+                </MovieDetailItem>
+
+                <MovieDetailItem>
+                  <Typography variant="h6">Release Date</Typography>
+                  <Typography>{movieDetails.releaseYear}</Typography>
+                </MovieDetailItem>
+
+                <MovieDetailItem>
+                  <Typography variant="h6">Director</Typography>
+                  <DirectorLink onClick={() => console.log("Yönetmen bilgisi")}>
+                    {director}
+                  </DirectorLink>
+                </MovieDetailItem>
+
+                <MovieDetailItem>
+                  <Typography variant="h6">Lead Actors</Typography>
+                  <Typography>{topActors.join(", ")}</Typography>
+                </MovieDetailItem>
+                <MovieDetailItem>
+                  <Typography variant="h6">Platforms</Typography>
+                  {moviePlatform &&
+                    moviePlatform.flatrate &&
+                    moviePlatform.flatrate.map((platform, index) => (
+                      <Typography key={index}>
+                        {platform.provider_name}
+                      </Typography>
+                    ))}
+                </MovieDetailItem>
+              </MovieDetails>
+            </DetailsContainer>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>Kapat</Button>
+          </DialogActions>
+        </Dialog>
+      )}
+    </Box>
    );
  }
  
