@@ -135,37 +135,33 @@ function Header() {
         />
 
         <Box style={{ flex: 1 }}>
-          <select
-            value={genreFilter}
-            onChange={(e) => setGenreFilter(e.target.value)}
-          >
-            <option value="">Tüm Türler</option>
-            <option value="Aksiyon">Aksiyon</option>
-            <option value="Komedi">Komedi</option>
-          </select>
-          <select
-            value={platformFilter}
-            onChange={(e) => setPlatformFilter(e.target.value)}
-          >
-            <option value="">Tüm Platformlar</option>
-            <option value="Netflix">Netflix</option>
-            <option value="Amazon Prime Video">Amazon Prime Video</option>
-          </select>
-          <input
-            type="number"
-            placeholder="Yayın Yılı"
-            value={yearFilter}
-            onChange={(e) => setYearFilter(e.target.value)}
-          />
           <form onSubmit={handleSubmit}>
-            <InputSearchField
-              variant="outlined"
-              placeholder="Film ara..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <button type="submit">Ara</button>
-          </form>
+      <InputSearchField
+        variant="outlined"
+        placeholder="Film adı..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+      <select
+        value={genreFilter}
+        onChange={(e) => setGenreFilter(e.target.value)}
+      >
+        {/* Tür seçenekleri */}
+      </select>
+      <select
+        value={platformFilter}
+        onChange={(e) => setPlatformFilter(e.target.value)}
+      >
+        {/* Platform seçenekleri */}
+      </select>
+      <input
+        type="number"
+        placeholder="Yayın Yılı"
+        value={yearFilter}
+        onChange={(e) => setYearFilter(e.target.value)}
+      />
+      <button type="submit">Ara</button>
+    </form>
         </Box>
 
         <Typography>
