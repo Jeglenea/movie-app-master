@@ -142,24 +142,6 @@ function Header() {
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
       />
-      <select
-        value={genreFilter}
-        onChange={(e) => setGenreFilter(e.target.value)}
-      >
-        {/* Tür seçenekleri */}
-      </select>
-      <select
-        value={platformFilter}
-        onChange={(e) => setPlatformFilter(e.target.value)}
-      >
-        {/* Platform seçenekleri */}
-      </select>
-      <input
-        type="number"
-        placeholder="Yayın Yılı"
-        value={yearFilter}
-        onChange={(e) => setYearFilter(e.target.value)}
-      />
       <button type="submit">Ara</button>
     </form>
         </Box>
