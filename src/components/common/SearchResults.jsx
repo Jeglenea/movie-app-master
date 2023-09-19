@@ -12,6 +12,7 @@ import {
   DialogActions,
 } from "@mui/material";
 import axios from "axios";
+import Select from "react-select";
 
 const ResultItem = styled("li")({
   display: "flex",
@@ -29,8 +30,8 @@ const DetailsContainer = styled("div")({
 
 const Poster = styled("img")({
   maxWidth: "50%",
-  maxHeight: "400px", // Poster yüksekliğini ayarlayabilirsiniz
-  objectFit: "cover", // Poster görüntüsünü düzgün bir şekilde sığdırmak için
+  maxHeight: "400px",
+  objectFit: "cover",
 });
 
 const MovieDetails = styled("div")({
@@ -50,51 +51,38 @@ const DirectorLink = styled(Typography)`
   }
 `;
 
-// Boş poster yerine kullanılacak varsayılan fotoğraf URL'i
 const defaultPoster =
   "https://fastly.picsum.photos/id/1035/200/300.jpg?hmac=744aBtkMLjfDyn2TzkMxsFzw2T0L57TMlNGFlX-Qgq0";
 
-function SearchResults({ searchResults, platformFilter }) {
+function SearchResults({ searchResults }) {
   const [selectedYear, setSelectedYear] = useState(null);
+  const [selectedGenres, setSelectedGenres] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [movieDetails, setMovieDetails] = useState(null);
   const [moviePlatform, setMoviePlatfrom] = useState(null);
   const [director, setDirector] = useState("Bilinmiyor");
   const [topActors, setTopActors] = useState([]);
-  const [isVisible, setIsVisible] = useState(true); // isVisible state'i eklenmiş
-
-
-  const handleFilterByYear = (year) => {
-    setSelectedYear(year);
-  };
+  const [isVisible, setIsVisible] = useState(true);
+  const genresToFilter = ["Action", "Drama", "Comedy", "Science Fiction"];
   const yearsToFilter = [2023, 2022, 2021, 2020];
+
   const handleMovieClick = async (movie) => {
     setSelectedMovie(movie);
 
-    // Film detayları için istek
     const movieDetailsUrl = `https://api.themoviedb.org/3/movie/${movie.id}?api_key=986fd9a832dc29e418d6705c077923df&language=en-US`;
-
-    // Film ekibi (crew) için istek
     const movieCrewUrl = `https://api.themoviedb.org/3/movie/${movie.id}/credits?api_key=986fd9a832dc29e418d6705c077923df&language=en-US`;
-
     const moviePlatformUrl = `https://api.themoviedb.org/3/movie/${movie.id}/watch/providers?api_key=986fd9a832dc29e418d6705c077923df&language=en-US`;
 
-
-    
     try {
-      // Film detayları için istek
       const detailsResponse = await axios.get(movieDetailsUrl);
       const detailsData = detailsResponse.data;
 
-      // Film ekibi (crew) için istek
       const crewResponse = await axios.get(movieCrewUrl);
       const crewData = crewResponse.data;
 
-      // Film ekibi (crew) için istek
       const platformResponse = await axios.get(moviePlatformUrl);
       const platfromData = platformResponse.data;
 
-      // Yönetmeni bul ve ayarla
       const directorInfo = crewData.crew.find(
         (crew) => crew.job === "Director"
       );
@@ -102,20 +90,17 @@ function SearchResults({ searchResults, platformFilter }) {
         setDirector(directorInfo.name);
       }
 
-      // En üstteki 5 oyuncuyu bul ve ayarla
       const actors = crewData.cast.slice(0, 5);
       setTopActors(actors.map((actor) => actor.name));
 
-      // Film türleri ve yayın yılına erişim
       const genres = detailsData.genres.map((genre) => genre.name).join(", ");
       const releaseYear = detailsData.release_date
         ? detailsData.release_date.slice(0, 4)
         : "Bilinmiyor";
 
-      const platforms = platfromData.results.US; // US yerine istediğiniz ülkenin kodunu kullanabilirsiniz
+      const platforms = platfromData.results.US;
       setMoviePlatfrom(platforms);
 
-      // Film detaylarını ayarla
       const movieDetails = {
         genres,
         releaseYear,
@@ -125,14 +110,56 @@ function SearchResults({ searchResults, platformFilter }) {
       console.error("Error while fetching movie details", error);
     }
   };
-  const filteredResults = selectedYear
-  ? searchResults.filter((movie) => {
-      const releaseYear = movie.release_date
-        ? parseInt(movie.release_date.substring(0, 4))
-        : null;
-      return releaseYear === selectedYear;
-    })
-  : searchResults;
+  const handleFilterByGenre = (selectedOptions) => {
+    setSelectedGenres(selectedOptions);
+  };
+
+  const handleFilterByYear = (selectedOption) => {
+    setSelectedYear(selectedOption);
+  };
+
+  const customStyles = {
+    control: (provided) => ({
+      ...provided,
+      maxWidth: "200px",
+    }),
+  };
+
+  const selectStyles = {
+    control: (provided) => ({
+      ...provided,
+      width: "50%",
+      display: "inline-block",
+    }),
+    menu: (provided) => ({
+      ...provided,
+      marginTop: 0,
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      fontSize: "12px",
+      color: "black", // Seçeneklerin rengi siyah
+    }),
+  };
+
+  const filteredResults = searchResults.filter((movie) => {
+    const releaseYear = movie.release_date
+      ? parseInt(movie.release_date.substring(0, 4))
+      : null;
+
+    const movieGenres = movieDetails?.genres
+      ? movieDetails.genres.split(", ")
+      : [];
+
+    const yearFilterCondition =
+      !selectedYear || (releaseYear && releaseYear === selectedYear.value);
+
+    const genreFilterCondition =
+      selectedGenres.length === 0 ||
+      selectedGenres.every((genre) => movieGenres.includes(genre.value));
+
+    return yearFilterCondition && genreFilterCondition;
+  });
 
   const handleClose = () => {
     setSelectedMovie(null);
@@ -144,8 +171,6 @@ function SearchResults({ searchResults, platformFilter }) {
   const toggleVisibility = () => {
     setIsVisible(!isVisible);
   };
-
-
 
   return (
     <div>
@@ -159,8 +184,69 @@ function SearchResults({ searchResults, platformFilter }) {
           >
             <CloseIcon />
           </IconButton>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <div
+              style={{ marginRight: "10px", width: "500px", height: "100px" }}
+            >
+              <h2 style={{ fontSize: "12px", marginBottom: "5px" }}>
+                Türlere Göre Filtrele:
+              </h2>
+              <Select
+                isMulti
+                options={genresToFilter.map((genre) => ({
+                  label: genre,
+                  value: genre,
+                }))}
+                value={selectedGenres}
+                onChange={handleFilterByGenre}
+                styles={{
+                  control: (provided) => ({
+                    ...provided,
+                    backgroundColor: "white",
+                    color: "black",
+                  }),
+                  option: (provided, state) => ({
+                    ...provided,
+                    backgroundColor: state.isSelected
+                      ? "lightskyblue"
+                      : "white",
+                    color: "black",
+                  }),
+                }}
+                isClearable={true}
+              />
+            </div>
+            <div style={{ width: "500px", height: "100px" }}>
+              <h2 style={{ fontSize: "12px", marginBottom: "5px" }}>
+                Yıllara Göre Filtrele:
+              </h2>
+              <Select
+                options={yearsToFilter.map((year) => ({
+                  label: year,
+                  value: year,
+                }))}
+                value={selectedYear}
+                onChange={handleFilterByYear}
+                styles={{
+                  control: (provided) => ({
+                    ...provided,
+                    backgroundColor: "white",
+                    color: "black",
+                  }),
+                  option: (provided, state) => ({
+                    ...provided,
+                    backgroundColor: state.isSelected
+                      ? "lightskyblue"
+                      : "white",
+                    color: "black",
+                  }),
+                }}
+                isClearable={true}
+              />
+            </div>
+          </div>
           <ul style={{ listStyleType: "none", padding: 0 }}>
-            {searchResults.map((movie) => (
+            {filteredResults.map((movie) => (
               <ResultItem
                 key={movie.id}
                 onClick={() => handleMovieClick(movie)}

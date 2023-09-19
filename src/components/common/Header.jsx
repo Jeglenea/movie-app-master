@@ -45,7 +45,7 @@ const StyledToolBar = styled(Toolbar)`
 const InputSearchField = styled(InputBase)`
   background: #ffffff;
   height: 30px;
-  width: 55%;
+  width: 500px;
   border-radius: 5px;
 `;
 
@@ -134,16 +134,29 @@ function Header() {
           anchorRef={anchorRef}
         />
 
-        <Box style={{ flex: 1 }}>
-          <form onSubmit={handleSubmit}>
-      <InputSearchField
-        variant="outlined"
-        placeholder="Film adı..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-      />
-      <button type="submit">Ara</button>
-    </form>
+        <Box style={{ flex: 1, display: "flex", alignItems: "center" }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'center' }}>
+            <InputSearchField
+              variant="outlined"
+              placeholder="Film adı..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <button
+              style={{
+                backgroundColor: "#121212",
+                color: "white",
+                border: "none",
+                borderRadius: "5px",
+                padding: "8px 16px",
+                cursor: "pointer",
+                transition: "background-color 0.3s ease",
+              }}
+              type="submit"
+            >
+              Search
+            </button>
+          </form>
         </Box>
 
         <Typography>

@@ -36,8 +36,8 @@ const DetailsContainer = styled("div")({
 
 const Poster = styled("img")({
   maxWidth: "50%",
-  maxHeight: "400px", // Poster yüksekliğini ayarlayabilirsiniz
-  objectFit: "cover", // Poster görüntüsünü düzgün bir şekilde sığdırmak için
+  maxHeight: "400px",
+  objectFit: "cover",
 });
 
 
@@ -95,28 +95,23 @@ function Slide({ movies }) {
   const handleMovieClick = async (movie) => {
     setSelectedMovie(movie);
 
-    // Film detayları için istek
     const movieDetailsUrl = `https://api.themoviedb.org/3/movie/${movie.id}?api_key=986fd9a832dc29e418d6705c077923df&language=en-US`;
 
-    // Film ekibi (crew) için istek
     const movieCrewUrl = `https://api.themoviedb.org/3/movie/${movie.id}/credits?api_key=986fd9a832dc29e418d6705c077923df&language=en-US`;
 
     const moviePlatformUrl = `https://api.themoviedb.org/3/movie/${movie.id}/watch/providers?api_key=986fd9a832dc29e418d6705c077923df&language=en-US`;
 
     try {
-      // Film detayları için istek
+
       const detailsResponse = await axios.get(movieDetailsUrl);
       const detailsData = detailsResponse.data;
 
-      // Film ekibi (crew) için istek
       const crewResponse = await axios.get(movieCrewUrl);
       const crewData = crewResponse.data;
 
-      // Film ekibi (crew) için istek
       const platformResponse = await axios.get(moviePlatformUrl);
       const platfromData = platformResponse.data;
 
-      // Yönetmeni bul ve ayarla
       const directorInfo = crewData.crew.find(
         (crew) => crew.job === "Director"
       );
@@ -124,20 +119,16 @@ function Slide({ movies }) {
         setDirector(directorInfo.name);
       }
 
-      // En üstteki 5 oyuncuyu bul ve ayarla
       const actors = crewData.cast.slice(0, 5);
       setTopActors(actors.map((actor) => actor.name));
 
-      // Film türleri ve yayın yılına erişim
       const genres = detailsData.genres.map((genre) => genre.name).join(", ");
       const releaseYear = detailsData.release_date
         ? detailsData.release_date.slice(0, 4)
         : "Bilinmiyor";
 
-      const platforms = platfromData.results.US; // US yerine istediğiniz ülkenin kodunu kullanabilirsiniz
+      const platforms = platfromData.results.US;
       setMoviePlatfrom(platforms);
-
-      // Film detaylarını ayarla
       const movieDetails = {
         genres,
         releaseYear,
@@ -181,8 +172,6 @@ function Slide({ movies }) {
            </div>
          ))}
        </Carousel>
- 
-       {/* Filmin Detayları için Dialog */}
        {selectedMovie && movieDetails && (
         <Dialog
           open={Boolean(selectedMovie)}
